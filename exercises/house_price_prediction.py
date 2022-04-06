@@ -23,7 +23,17 @@ def load_data(filename: str):
     Design matrix and response vector (prices) - either as a single
     DataFrame or a Tuple[DataFrame, Series]
     """
-    raise NotImplementedError()
+    house_prise = pd.read_csv(filename)
+    house_prise.drop("id", axis=1)
+    house_prise.drop("date", axis=1)
+    house_prise.drop("lat", axis=1)
+    house_prise.drop("long", axis=1)
+    house_prise.drop("zipcode", axis=1)
+    house_prise["zipcode"] = house_prise["zipcode"].astype(int)
+    house_prise = house_prise.loc[~((house_prise['price'] > 0) | (house_prise['bedrooms'] == 0))]
+    #price >0
+    #
+    # raise NotImplementedError()
 
 
 def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") -> NoReturn:
@@ -43,12 +53,13 @@ def feature_evaluation(X: pd.DataFrame, y: pd.Series, output_path: str = ".") ->
     output_path: str (default ".")
         Path to folder in which plots are saved
     """
-    raise NotImplementedError()
+    p = (np.cov(X, y))/(np.std(X)*np.std(y))
 
 
 if __name__ == '__main__':
     np.random.seed(0)
     # Question 1 - Load and preprocessing of housing prices dataset
+    load_data('C:\\Users\\harel\\imlP\\IML.HUJI\\datasets\\house_prices.csv')
     raise NotImplementedError()
 
     # Question 2 - Feature evaluation with respect to response
