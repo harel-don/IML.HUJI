@@ -17,7 +17,7 @@ def mean_square_error(y_true: np.ndarray, y_pred: np.ndarray) -> float:
     MSE of given predictions
     """
 # def rmse(predictions, targets):
-    return np.sum((y_pred - y_true) ** 2).mean()
+    return np.mean((y_true - y_pred)**2).sum()
     # return np.sqrt(((y_pred - y_true) ** 2).mean())
 
 
