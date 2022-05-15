@@ -48,7 +48,18 @@ class AdaBoost(BaseEstimator):
         y : ndarray of shape (n_samples, )
             Responses of input data to fit to
         """
-        raise NotImplementedError()
+        n = y.shape[0]
+        D = np.ones(n) / n
+        self.models_ = [None] * self.iterations_
+        self.weights_ = np.zeros(self.iterations_)
+        for i in range(0, self.iterations_):
+            self.models_[i] = self.wl_().fit(X, y*D)
+            y_ = self.models_[i]._predict(X)
+            err = np.sum((np.abs(y_ - y) / 2) * D)
+            self.weights_[i] = 0.5 * np.log(1.0 / err - 1)
+            D *= np.exp((-1) * self.weights_[i] * y * y_)
+            D /= np.sum(D)
+        self.D_ = D
 
     def _predict(self, X):
         """
@@ -64,7 +75,7 @@ class AdaBoost(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        return self.partial_predict(X, self.iterations_)
 
     def _loss(self, X: np.ndarray, y: np.ndarray) -> float:
         """
@@ -83,7 +94,7 @@ class AdaBoost(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        return self.partial_loss(X, y,  self.iterations_)
 
     def partial_predict(self, X: np.ndarray, T: int) -> np.ndarray:
         """
@@ -102,7 +113,11 @@ class AdaBoost(BaseEstimator):
         responses : ndarray of shape (n_samples, )
             Predicted responses of given samples
         """
-        raise NotImplementedError()
+        y_pred = np.zeros(X.shape[0])
+        for i in range(T):
+            y_pred += (self.models_[i].predict(X) * self.weights_[i])
+
+        return np.sign(y_pred)
 
     def partial_loss(self, X: np.ndarray, y: np.ndarray, T: int) -> float:
         """
@@ -124,4 +139,5 @@ class AdaBoost(BaseEstimator):
         loss : float
             Performance under missclassification loss function
         """
-        raise NotImplementedError()
+        from ...metrics import misclassification_error
+        return misclassification_error(y, self.partial_predict(X, T))
